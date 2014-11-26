@@ -33,9 +33,6 @@
     "databaseName": {
       "type": "string"
     },
-    "databaseLocation": {
-      "type": "string"
-    },
     "databaseSku": {
       "type": "string",
       "allowedValues": [
@@ -61,7 +58,7 @@
       "plan": {
         "name": "[parameters('databaseSku')]"
       },
-      "location": "[parameters('databaseLocation')]",
+      "location": "[parameters('siteLocation')]",
       "tags": {
         "provision_source": "RMS"
       }

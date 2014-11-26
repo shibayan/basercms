@@ -29,3 +29,8 @@ License
 
 Lincensed under the MIT lincense since version 2.0
 
+Deploy
+-------
+
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
+

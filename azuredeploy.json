@@ -1,0 +1,111 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "siteName": {
+      "type": "string"
+    },
+    "hostingPlanName": {
+      "type": "string"
+    },
+    "siteLocation": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Shared",
+        "Basic",
+        "Standard"
+      ],
+      "defaultValue": "Free"
+    },
+    "workerSize": {
+      "type": "string",
+      "allowedValues": [
+        "0",
+        "1",
+        "2"
+      ],
+      "defaultValue": "0"
+    },
+    "databaseName": {
+      "type": "string"
+    },
+    "databaseLocation": {
+      "type": "string"
+    },
+    "databaseSku": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Jupiter",
+        "Staurn",
+        "Venus"
+      ],
+      "defaultValue": "Free"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2014-01-01",
+      "name": "[parameters('databaseName')]",
+      "type": "SuccessBricks.ClearDB/databases",
+      "plan": {
+        "name": "[parameters('databaseSku')]"
+      },
+      "location": "[parameters('databaseLocation')]",
+      "tags": {
+        "provision_source": "RMS"
+      }
+    },
+    {
+      "apiVersion": "2014-06-01",
+      "name": "[parameters('hostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[parameters('siteLocation')]",
+      "properties": {
+        "name": "[parameters('hostingPlanName')]",
+        "sku": "[parameters('sku')]",
+        "workerSize": "[parameters('workerSize')]",
+        "numberOfWorkers": 0
+      }
+    },
+    {
+      "apiVersion": "2014-06-01",
+      "name": "[parameters('siteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[parameters('siteLocation')]",
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "empty"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
+      ],
+      "properties": {
+        "name": "[parameters('siteName')]",
+        "serverFarm": "[parameters('hostingPlanName')]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2014-06-01",
+          "name": "web",
+          "type": "config",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', parameters('siteName'))]"
+          ],
+          "properties": {
+            "connectionStrings": [
+              {
+                "ConnectionString": "[reference(concat('SuccessBricks.ClearDB/databases/', parameters('databaseName'))).connectionString]",
+                "Name": "DefaultConnection",
+                "Type": 0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
